@@ -5,6 +5,7 @@ import (
 	"mime"
 	"net/http"
 
+	"github.com/jaredhughes1012/parcel/httperror"
 	"github.com/jaredhughes1012/parcel/json"
 	"github.com/jaredhughes1012/parcel/text"
 )
@@ -48,13 +49,13 @@ func BindFromRequest(r *http.Request, target interface{}) error {
 		if ct == "text/plain" {
 			return textBinder.BindFromRequest(r, target)
 		} else {
-			return fmt.Errorf("cannot bind content type %s to string", ct)
+			return httperror.New(http.StatusUnsupportedMediaType, "unsupported content type %s", ct)
 		}
 	}
 
 	binder := objectBinders[ct]
 	if binder == nil {
-		return fmt.Errorf("unsupported content type %s", ct)
+		return httperror.New(http.StatusUnsupportedMediaType, "unsupported content type %s", ct)
 	}
 
 	return binder.BindFromRequest(r, target)
