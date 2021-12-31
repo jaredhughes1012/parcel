@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"net/http"
+
+	"github.com/jaredhughes1012/parcel/httperror"
 )
 
 // Parcel renderer for text data
@@ -42,4 +44,9 @@ func (r Renderer) NewRequest(method string, url string, data interface{}) (*http
 	req.Header.Set("Content-Type", "text/plain")
 
 	return req, nil
+}
+
+func (r Renderer) RenderErrorResponse(w http.ResponseWriter, err error) {
+	he := httperror.Convert(err)
+	_ = r.RenderResponse(w, he.Status, he.Message)
 }

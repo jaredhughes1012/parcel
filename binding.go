@@ -13,8 +13,18 @@ var (
 	objectBinders = map[string]Binder{
 		"application/json": json.Binder{},
 	}
-	textBinder = text.Binder{}
+	textBinder = Binder(text.Binder{})
 )
+
+// Sets the default renderer for any plain text responses
+func SetTextBinder(b Binder) {
+	textBinder = b
+}
+
+// Sets the default binder for any object responses of the given content type
+func SetObjectBinder(contentType string, b Binder) {
+	objectBinders[contentType] = b
+}
 
 // Handles binding data from a source to a destination
 type Binder interface {

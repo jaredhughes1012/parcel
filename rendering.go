@@ -8,9 +8,25 @@ import (
 )
 
 var (
-	textRenderer   = text.Renderer{}
-	objectRenderer = json.Renderer{}
+	textRenderer   = Renderer(text.Renderer{})
+	objectRenderer = Renderer(json.Renderer{})
+	errorRenderer  = Renderer(json.Renderer{})
 )
+
+// Sets the default renderer for any plain text responses
+func SetTextRenderer(r Renderer) {
+	textRenderer = r
+}
+
+// Sets the default renderer for any error responses
+func SetErrorRenderer(r Renderer) {
+	errorRenderer = r
+}
+
+// Sets the default renderer for any object responses
+func SetObjectRenderer(r Renderer) {
+	objectRenderer = r
+}
 
 // Renders data from a source to a destination
 type Renderer interface {
@@ -19,6 +35,9 @@ type Renderer interface {
 
 	// Creates a new HTTP request and renders data to the body of the request
 	NewRequest(method, destination string, data interface{}) (*http.Request, error)
+
+	// Renders an error to an HTTP response
+	RenderErrorResponse(w http.ResponseWriter, err error)
 }
 
 // Renders data from the given data into an HTTP response. Will use the configured text renderer
@@ -41,4 +60,11 @@ func NewRequest(method, u string, data interface{}) (*http.Request, error) {
 	} else {
 		return objectRenderer.NewRequest(method, u, data)
 	}
+}
+
+// Renders an error into an HTTP response. Uses JSON formatting by default but can be configured to use any
+// renderer. Will use the status of any HTTP error or InternalServerError(500) if the error is not an http
+// error
+func RenderErrorResponse(w http.ResponseWriter, err error) {
+	errorRenderer.RenderErrorResponse(w, err)
 }
