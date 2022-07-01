@@ -35,6 +35,17 @@ func Wrap(status int, wrapped error) error {
 	}
 }
 
+// Unwraps an http error to get the internal error and http status code. If the
+// error is not an http error returns InternalServerError and a nil wrapped error
+func Unwrap(err error) (int, error) {
+	httpErr, ok := err.(*HttpError)
+	if !ok {
+		return http.StatusInternalServerError, nil
+	}
+
+	return httpErr.Status, httpErr.wrapped
+}
+
 // Checks if the error is an http error. If it is, returns it cast as an HttpError
 // If not, provides a new wrapped http error
 func Convert(err error) *HttpError {

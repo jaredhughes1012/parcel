@@ -52,3 +52,41 @@ func Test_Convert_NotHttpError(t *testing.T) {
 		t.Errorf("Error wrapping failed: %s != %s", he.wrapped.Error(), err.Error())
 	}
 }
+
+func Test_Unwrap(t *testing.T) {
+	cases := []struct {
+		name    string
+		wrapErr error
+		status  int
+	}{
+		{
+			name:    "Http Error",
+			wrapErr: errors.New("test"),
+			status:  http.StatusNotFound,
+		},
+		{
+			name:    "Regular Error",
+			wrapErr: nil,
+			status:  http.StatusInternalServerError,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			var input error
+			if c.wrapErr != nil {
+				input = Wrap(c.status, c.wrapErr)
+			} else {
+				input = errors.New("test")
+			}
+
+			status, output := Unwrap(input)
+			if c.status != status {
+				t.Errorf("%d != %d", c.status, status)
+			}
+			if c.wrapErr != output {
+				t.Errorf("%v != %v", c.wrapErr, output)
+			}
+		})
+	}
+}
