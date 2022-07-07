@@ -113,3 +113,18 @@ func Test_NewRequest_Text(t *testing.T) {
 		t.Errorf("Rendered value invalid: %s != %s", td1, s)
 	}
 }
+
+func Test_NewRequest_Nil(t *testing.T) {
+	req, err := NewRequest(http.MethodPost, "/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if ct := req.Header.Get("Content-Type"); ct != "" {
+		t.Errorf("Content type %s should not exist", ct)
+	}
+
+	if req.Body != nil {
+		t.Error("Request should not have a body")
+	}
+}

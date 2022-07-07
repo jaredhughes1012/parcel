@@ -52,8 +52,13 @@ func RenderResponse(w http.ResponseWriter, status int, data interface{}) error {
 }
 
 // Creates a new HTTP request and renders the given data into it. Will use the configured text renderer
-// for string data or the configured object renderer for any other data
+// for string data or the configured object renderer for any other data. If data is nil, this will behave
+// the same as using http.NewRequest with a nil body
 func NewRequest(method, u string, data interface{}) (*http.Request, error) {
+	if data == nil {
+		return http.NewRequest(method, u, nil)
+	}
+
 	_, ok := data.(string)
 	if ok {
 		return textRenderer.NewRequest(method, u, data)
