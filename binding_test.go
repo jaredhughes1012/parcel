@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/jaredhughes1012/parcel/httperror"
 )
 
 func Test_BindFromRequest_Json(t *testing.T) {
@@ -41,9 +43,34 @@ func Test_BindFromRequest_UnsupportedObjectType(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "evil/data")
 
-	err := BindFromRequest(req, &td2)
+	hErr := BindFromRequest(req, &td2)
+	status, err := httperror.Unwrap(hErr)
+
 	if err == nil {
-		t.Fatal("Error should not be nil")
+		t.Fatal("Non http error returned")
+	} else if status != http.StatusUnsupportedMediaType {
+		t.Fatalf("Invalid http status code %d", status)
+	}
+}
+
+func Test_BindFromRequest_NoMediaType(t *testing.T) {
+	type testData struct {
+		Field string `json:"field"`
+	}
+
+	td1 := testData{Field: "test"}
+	var td2 testData
+
+	b, _ := json.Marshal(&td1)
+	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer(b))
+
+	hErr := BindFromRequest(req, &td2)
+	status, err := httperror.Unwrap(hErr)
+
+	if err == nil {
+		t.Fatal("Non http error returned")
+	} else if status != http.StatusBadRequest {
+		t.Fatalf("Invalid http status code %d", status)
 	}
 }
 
@@ -102,9 +129,38 @@ func Test_BindFromResponse_UnsupportedObjectType(t *testing.T) {
 	}
 	res.Header.Set("Content-Type", "evil/data")
 
-	err := BindFromResponse(res, &td2)
+	hErr := BindFromResponse(res, &td2)
+	status, err := httperror.Unwrap(hErr)
+
 	if err == nil {
-		t.Fatal("Error should not be nil")
+		t.Fatal("Non http error returned")
+	} else if status != http.StatusUnsupportedMediaType {
+		t.Fatalf("Invalid http status code %d", status)
+	}
+}
+
+func Test_BindFromResponse_NoMediaType(t *testing.T) {
+	type testData struct {
+		Field string `json:"field"`
+	}
+
+	td1 := testData{Field: "test"}
+	var td2 testData
+
+	b, _ := json.Marshal(&td1)
+	res := &http.Response{
+		Header:        make(http.Header),
+		Body:          ioutil.NopCloser(bytes.NewBuffer(b)),
+		ContentLength: int64(len(b)),
+	}
+
+	hErr := BindFromResponse(res, &td2)
+	status, err := httperror.Unwrap(hErr)
+
+	if err == nil {
+		t.Fatal("Non http error returned")
+	} else if status != http.StatusBadRequest {
+		t.Fatalf("Invalid http status code %d", status)
 	}
 }
 

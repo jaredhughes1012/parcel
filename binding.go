@@ -41,7 +41,7 @@ type Binder interface {
 func BindFromRequest(r *http.Request, target interface{}) error {
 	ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
-		return err
+		return httperror.Wrap(http.StatusBadRequest, err)
 	}
 
 	_, ok := target.(*string)
@@ -66,7 +66,7 @@ func BindFromRequest(r *http.Request, target interface{}) error {
 func BindFromResponse(r *http.Response, target interface{}) error {
 	ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
-		return err
+		return httperror.Wrap(http.StatusBadRequest, err)
 	}
 
 	_, ok := target.(*string)
@@ -80,7 +80,7 @@ func BindFromResponse(r *http.Response, target interface{}) error {
 
 	binder := objectBinders[ct]
 	if binder == nil {
-		return fmt.Errorf("unsupported content type %s", ct)
+		return httperror.New(http.StatusUnsupportedMediaType, "unsupported content type %s", ct)
 	}
 
 	return binder.BindFromResponse(r, target)
