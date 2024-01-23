@@ -10,8 +10,8 @@ func SetDefaultWriter(writer Writer) {
 }
 
 // Response writes the given data to an HTTP response using the default writer.
-func Response(w http.ResponseWriter, data any) error {
-	return defaultWriter.WriteResponse(w, data)
+func Response(w http.ResponseWriter, status int, data any) error {
+	return defaultWriter.WriteResponse(w, status, data)
 }
 
 // Error writes the given error to an HTTP response using the default writer.

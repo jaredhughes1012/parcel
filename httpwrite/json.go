@@ -15,8 +15,7 @@ type JsonWriter struct{}
 func (writer JsonWriter) WriteError(w http.ResponseWriter, err error) {
 	status, _ := httperror.Unwrap(err)
 
-	w.WriteHeader(status)
-	_ = writer.WriteResponse(w, map[string]any{
+	_ = writer.WriteResponse(w, status, map[string]any{
 		"error": http.StatusText(status),
 	})
 }
@@ -38,8 +37,9 @@ func (JsonWriter) NewRequest(ctx context.Context, method, url string, data any) 
 }
 
 // WriteResponse implements Writer.
-func (JsonWriter) WriteResponse(w http.ResponseWriter, data any) error {
+func (JsonWriter) WriteResponse(w http.ResponseWriter, status int, data any) error {
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(data)
 }
 

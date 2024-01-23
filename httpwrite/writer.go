@@ -8,7 +8,7 @@ import (
 // Handles writing data to HTTP requests/responses
 type Writer interface {
 	// Writes the given data to an HTTP response
-	WriteResponse(w http.ResponseWriter, data any) error
+	WriteResponse(w http.ResponseWriter, status int, data any) error
 
 	// Writes the given error to an HTTP response
 	WriteError(w http.ResponseWriter, err error)

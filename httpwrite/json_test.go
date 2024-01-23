@@ -62,8 +62,9 @@ func Test_JsonWriter_WriteRequest(t *testing.T) {
 	w := httptest.NewRecorder()
 	writer := NewJsonWriter()
 
-	err := writer.WriteResponse(w, data)
+	err := writer.WriteResponse(w, http.StatusBadRequest, data)
 	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 
 	var result map[string]any
@@ -76,8 +77,9 @@ func Test_JsonWriter_WriteRequest(t *testing.T) {
 	w = httptest.NewRecorder()
 	SetDefaultWriter(writer)
 
-	err = Response(w, data)
+	err = Response(w, http.StatusNotFound, data)
 	assert.NoError(t, err)
+	assert.Equal(t, http.StatusNotFound, w.Code)
 	assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 
 	err = json.NewDecoder(w.Body).Decode(&result)
